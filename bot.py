@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import tempfile
 import asyncio
 from threading import Thread
@@ -125,7 +126,45 @@ def download_menu():
 
     return InlineKeyboardMarkup(keyboard)
 
+async def notify_new_user(context, user):
 
+    if not ADMIN_ID or user.id == ADMIN_ID:
+        return
+
+    username = (
+        f"@{user.username}"
+        if user.username
+        else "ندارد"
+    )
+
+    language = (
+        user.language_code
+        if user.language_code
+        else "نامشخص"
+    )
+
+    text = f"""
+🟢 کاربر جدید وارد ربات شد
+
+👤 نام: {user.full_name}
+🔹 Username: {username}
+🆔 User ID: {user.id}
+🌐 Language: {language}
+🤖 Bot: {"بله" if user.is_bot else "خیر"}
+🕐 زمان: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+"""
+
+    try:
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=text
+        )
+
+    except Exception as e:
+        print(
+            "Admin notification error:",
+            e
+        )
 # =========================
 # START
 # =========================
@@ -133,13 +172,18 @@ def download_menu():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = update.effective_user
+history = get_history(user.id)
 
     save_user(
         user.id,
         user.username,
         user.first_name
     )
-
+if not history:
+    await notify_new_user(
+        context,
+        user
+    )
     context.user_data["mode"] = "ai"
 
     await update.message.reply_text(
