@@ -614,4 +614,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()    async def set_commands(app):
+        await app.bot.set_my_commands([
+            ("start", "🚀 شروع ربات"),
+            ("clear", "🧹 پاک کردن حافظه"),
+            ("admin", "👑 پنل مدیریت"),
+        ])
+
+    application.post_init = set_commands
